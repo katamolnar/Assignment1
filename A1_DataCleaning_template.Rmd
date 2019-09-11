@@ -231,10 +231,12 @@ List all kids who:
 3. have not completed all trials. Tip: Use pipes to solve this
 
 ```{r}
+filter1 <- df_merged %>%  group_by(SUBJ) %>% 
+  summarize(mean(CHI_MLU)) %>% filter(`mean(CHI_MLU)`>2.7)
+filter2 <- filter(df_merged,VISIT ==1 & CHI_MLU <1.5)
 
 
 ```
-
 
 USING ARRANGE
 
@@ -242,6 +244,15 @@ USING ARRANGE
 2. Sort kids to find the kid who produced the least amount of words on the 1st visit.
 
 ```{r}
+#1
+arrange(df_merged, desc(VISIT), desc(tokens_CHI))
+
+#OR is only want visit6 in df
+visitsix <- filter(df_merged, VISIT==6)
+arrange(visitsix, desc(VISIT), desc(tokens_CHI))
+
+#2
+arrange(df_merged, VISIT, tokens_CHI)
 
 
 ```
@@ -252,6 +263,11 @@ USING SELECT
 2. What happens if you include the name of a variable multiple times in a select() call?
 
 ```{r}
+#1
+selected <- df_merged %>%  filter(Diagnosis=="ASD") %>% 
+  select(SUBJ, VISIT, CHI_MLU, MOT_MLU, tokens_CHI, tokens_MOT)
+#2
+#nothing happens
 
 ```
 
@@ -262,6 +278,14 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+#1.
+df_merged %>% group_by(SUBJ) %>% mutate(mean(tokens_CHI))
+df_merged %>% mutate(mean(tokens_CHI))
 
+df_merged <- group_by(df_merged,SUBJ) %>% mutate(mean(tokens_CHI+tokens_MOT))
+df_merged <- mutate(df_merged,mean(tokens_CHI))
 
+#2 unfinished
+df_merged %>% group_by(SUBJ) %>% 
+  summarise(mean(tokens_CHI))
 ```
