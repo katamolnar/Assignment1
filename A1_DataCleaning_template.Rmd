@@ -107,7 +107,6 @@ Tip: The stringr package is what you need. str_extract () will allow you to extr
 ```{r}
 lu$VISIT <- str_extract(lu$VISIT,"\\d" )   #it takes out the letters and keeps only the digits in that column
 token$VISIT <- str_extract(token$VISIT,"\\d" )
-
 ```
 
 2c. We also need to make a small adjustment to the content of the Child.ID coloumn in the demographic data. Within this column, names that are not abbreviations do not end with "." (i.e. Adam), which is the case in the other two data sets (i.e. Adam.). If The content of the two variables isn't identical the rows will not be merged.
@@ -121,7 +120,6 @@ Tip: You can either have one line of code for each child name that is to be chan
 lu$SUBJ <- str_replace_all(lu$SUBJ, "[.]", "")
 token$SUBJ <- str_replace_all(token$SUBJ, "[.]", "")
 demo$SUBJ <- str_replace_all(demo$SUBJ, "[.]", "")
-
 ```
 
 2d. Now that the nitty gritty details of the different data sets are fixed, we want to make a subset of each data set only containig the variables that we wish to use in the final data set.
@@ -191,6 +189,7 @@ A possible way to do so:
 clinical <- df_all %>% 
   filter(VISIT==1) %>% 
   select(SUBJ, ADOS, nonverbalIQ, verbalIQ, Socialization)
+
 names(clinical) <- c("SUBJ", "ADOS1", "nonverbalIQ1", "verbalIQ1", "Socialization1")
 
 df_merged <- merge(df_all, clinical)
@@ -214,7 +213,6 @@ df_merged$Diagnosis <- as.factor(df_merged$Diagnosis)
 levels(df_merged$Diagnosis)[levels(df_merged$Diagnosis)=="A"] <- "ASD"
 levels(df_merged$Diagnosis)[levels(df_merged$Diagnosis)=="B"] <- "TD"
 
-
 write.csv(df_merged, file="assignment1df.csv")
 ```
 
@@ -231,10 +229,14 @@ List all kids who:
 3. have not completed all trials. Tip: Use pipes to solve this
 
 ```{r}
+#1
 filter1 <- df_merged %>%  group_by(SUBJ) %>% 
   summarize(mean(CHI_MLU)) %>% filter(`mean(CHI_MLU)`>2.7)
+
+#2
 filter2 <- filter(df_merged,VISIT ==1 & CHI_MLU <1.5)
 
+#3 what do you mean by trials?
 
 ```
 
@@ -246,15 +248,11 @@ USING ARRANGE
 ```{r}
 #1
 arrange(df_merged, desc(VISIT), desc(tokens_CHI))
-
-#OR is only want visit6 in df
-visitsix <- filter(df_merged, VISIT==6)
-arrange(visitsix, desc(VISIT), desc(tokens_CHI))
+# kid nr. 55
 
 #2
 arrange(df_merged, VISIT, tokens_CHI)
-
-
+#kid nr. 57
 ```
 
 USING SELECT
@@ -266,9 +264,12 @@ USING SELECT
 #1
 selected <- df_merged %>%  filter(Diagnosis=="ASD") %>% 
   select(SUBJ, VISIT, CHI_MLU, MOT_MLU, tokens_CHI, tokens_MOT)
-#2
-#nothing happens
 
+#2
+selected2 <- df_merged %>% 
+  filter(Diagnosis == "ASD") %>% 
+  select(SUBJ, SUBJ, VISIT, CHI_MLU, MOT_MLU, tokens_MOT, tokens_CHI)
+#nothing happens
 ```
 
 
@@ -285,7 +286,13 @@ df_merged %>% mutate(mean(tokens_CHI))
 df_merged <- group_by(df_merged,SUBJ) %>% mutate(mean(tokens_CHI+tokens_MOT))
 df_merged <- mutate(df_merged,mean(tokens_CHI))
 
-#2 unfinished
-df_merged %>% group_by(SUBJ) %>% 
-  summarise(mean(tokens_CHI))
+#other solution
+mutate1 <- df_merged %>% mutate(meanallvisit = mean(tokens_CHI))
+
+#2
+mutate2 <- df_merged %>% group_by(SUBJ) %>% mutate(meanallvisit = mean(tokens_CHI))
+
+#3
+#The development of the children is probably important, i.e. how they change, and not just how many words they can speak on average. That would only be a very simplified measure. 
+
 ```
